@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-tema="claro" data-fonte="normal">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Caderneta — Controle de Empréstimos</title>
+  <meta name="description" content="Caderninho digital para controlar empréstimos, parcelas, comprovantes e cobranças.">
+  <meta name="theme-color" content="#1E6B3C">
+
+  <!-- Aplica o tema e o tamanho da letra antes de qualquer coisa,
+       para a tela não "piscar" na cor errada. -->
+  <script>
+    (function () {
+      try {
+        var tema = localStorage.getItem('caderneta-tema') || 'claro';
+        if (tema === 'automatico') {
+          tema = matchMedia('(prefers-color-scheme: dark)').matches ? 'escuro' : 'claro';
+        }
+        document.documentElement.dataset.tema = tema;
+        if (localStorage.getItem('caderneta-fonte') === 'grande') {
+          document.documentElement.dataset.fonte = 'grande';
+        }
+      } catch (erro) { /* sem problema, fica o padrão */ }
+    })();
+  </script>
+
+  <link rel="stylesheet" href="./css/estilos.css">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/svg+xml" href="./icones/icone.svg">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icones/icone-192.png">
+
+  <!-- iPhone: ícone e modo aplicativo -->
+  <link rel="apple-touch-icon" href="./icones/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Caderneta">
+</head>
+<body>
+  <!-- Tela de abertura -->
+  <div id="carregando">
+    <img src="./icones/icone.svg" alt="">
+    <p>Abrindo sua caderneta…</p>
+  </div>
+
+  <!-- Cabeçalho -->
+  <header id="topo" hidden>
+    <span class="marca"><img src="./icones/icone.svg" alt="">Caderneta</span>
+    <span id="indicador-conexao"><span class="ponto"></span><span class="texto">Conectado</span></span>
+  </header>
+
+  <!-- Área das telas -->
+  <main id="tela"></main>
+
+  <!-- Navegação inferior -->
+  <nav id="navegacao" hidden aria-label="Navegação principal">
+    <button class="item-nav" data-aba="inicio" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/>
+      </svg>
+      Início
+    </button>
+    <button class="item-nav" data-aba="clientes" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-5.5 6.5-5.5s6.5 1.9 6.5 5.5"/>
+        <circle cx="17" cy="9" r="2.5"/><path d="M16.5 14.6c2.9.3 5 2 5 5.4"/>
+      </svg>
+      Clientes
+    </button>
+    <button class="item-nav" data-aba="novo" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="9.5"/><path d="M12 8v8M8 12h8"/>
+      </svg>
+      Novo
+    </button>
+    <button class="item-nav" data-aba="ajustes" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <path d="M4 7h16"/><circle cx="9" cy="7" r="2.2" fill="var(--cartao)"/>
+        <path d="M4 12h16"/><circle cx="15" cy="12" r="2.2" fill="var(--cartao)"/>
+        <path d="M4 17h16"/><circle cx="7" cy="17" r="2.2" fill="var(--cartao)"/>
+      </svg>
+      Ajustes
+    </button>
+  </nav>
+
+  <!-- Raízes de modais e avisos -->
+  <div id="raiz-modal"></div>
+  <div id="raiz-toast" aria-live="polite"></div>
+
+  <noscript>
+    <p style="padding:2rem;text-align:center">
+      Este aplicativo precisa do JavaScript ligado para funcionar.
+    </p>
+  </noscript>
+
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>
