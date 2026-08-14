@@ -6,7 +6,7 @@
 import * as dados from '../dados.js';
 import { esc, toast, confirmar, abrirModal } from '../util.js';
 import { exportarJSON, exportarExcel } from '../backup.js';
-import { lerFonte, lerTema, definirFonte, definirTema } from '../preferencias.js';
+import { lerFonte, lerTema, definirFonte, definirTema, lerNomeCredor, definirNomeCredor } from '../preferencias.js';
 
 export function render(el) {
   const fonte = lerFonte();
@@ -14,6 +14,16 @@ export function render(el) {
 
   el.innerHTML = `
     <h1 class="titulo-tela">Ajustes</h1>
+
+    <h2 class="titulo-secao">Seu nome</h2>
+    <div class="cartao"><div class="cartao-conteudo">
+      <div class="campo" style="margin-bottom:0">
+        <label for="campo-nome-credor">Nome de quem empresta</label>
+        <input id="campo-nome-credor" type="text" autocomplete="name" value="${esc(lerNomeCredor())}">
+        <p class="dica">Aparece no comprovante que o cliente assina:
+          "Recebi de <strong>[seu nome]</strong>…". Pode deixar em branco.</p>
+      </div>
+    </div></div>
 
     <h2 class="titulo-secao">Cópia de segurança</h2>
     <div class="cartao"><div class="cartao-conteudo">
@@ -95,6 +105,16 @@ export function render(el) {
     }
     botao.disabled = false;
     botao.textContent = 'Baixar planilha (Excel)';
+  });
+
+  // ---------- Nome de quem empresta ----------
+
+  const campoNome = el.querySelector('#campo-nome-credor');
+  let avisoNome = null;
+  campoNome.addEventListener('input', () => {
+    definirNomeCredor(campoNome.value);
+    clearTimeout(avisoNome);
+    avisoNome = setTimeout(() => toast('Nome salvo ✓'), 900);
   });
 
   // ---------- Letra e tema ----------

@@ -76,7 +76,7 @@ export async function exportarExcel() {
   const linhasEmprestimos = [[
     'Cliente', 'Valor emprestado (R$)', 'Data do empréstimo', 'Modo', 'Taxa ao mês (%)',
     'Nº de parcelas', 'Valor da parcela (R$)', 'Periodicidade', '1º vencimento',
-    'Total a receber (R$)', 'Situação', 'Observações',
+    'Total a receber (R$)', 'Situação', 'Observações', 'Assinado',
   ]];
   for (const e of ordenar(dados.emprestimos, 'clienteNome')) {
     linhasEmprestimos.push([
@@ -92,9 +92,10 @@ export async function exportarExcel() {
       centavosParaReais(e.totalAReceber),
       NOMES_STATUS_EMPRESTIMO[e.status] || e.status || '',
       e.observacoes || '',
+      e.assinaturaId ? 'Sim' : 'Não',
     ]);
   }
-  adicionarAba(XLSX, livro, 'Empréstimos', linhasEmprestimos, [1, 6, 9], [26, 16, 14, 18, 12, 10, 14, 20, 14, 16, 12, 30]);
+  adicionarAba(XLSX, livro, 'Empréstimos', linhasEmprestimos, [1, 6, 9], [26, 16, 14, 18, 12, 10, 14, 20, 14, 16, 12, 30, 10]);
 
   // --- Aba Parcelas ---
   const linhasParcelas = [['Cliente', 'Empréstimo (data)', 'Parcela', 'Vencimento', 'Valor (R$)', 'Valor pago (R$)', 'Situação', 'Data do pagamento']];

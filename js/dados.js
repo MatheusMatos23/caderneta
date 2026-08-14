@@ -245,6 +245,26 @@ export function criarEmprestimo(configuracao) {
     periodicidade: configuracao.periodicidade,
     primeiroVencimento: configuracao.primeiroVencimento,
   });
+
+  // A assinatura vai num documento próprio, como os comprovantes,
+  // para não pesar o documento do empréstimo.
+  const operacoesAssinatura = [];
+  let assinaturaId = null;
+  if (configuracao.assinaturaBase64) {
+    assinaturaId = novoId();
+    operacoesAssinatura.push({
+      tipo: 'set',
+      caminho: ['assinaturas', assinaturaId],
+      dados: {
+        emprestimoId: id,
+        clienteId: configuracao.clienteId,
+        clienteNome: configuracao.clienteNome,
+        imagemBase64: configuracao.assinaturaBase64,
+        criadoEm: driver.carimbo(),
+      },
+    });
+  }
+
   const operacoes = [{
     tipo: 'set',
     caminho: ['emprestimos', id],
@@ -262,14 +282,42 @@ export function criarEmprestimo(configuracao) {
       totalAReceber: configuracao.totalCentavos,
       status: 'ativo',
       observacoes: configuracao.observacoes || '',
+      assinaturaId,
       criadoEm: driver.carimbo(),
     },
   }];
   for (const p of parcelas) {
     operacoes.push({ tipo: 'set', caminho: ['emprestimos', id, 'parcelas', String(p.numero)], dados: p });
   }
+  operacoes.push(...operacoesAssinatura);
   gravar(operacoes);
   return id;
+}
+
+// ---------- Assinatura do empréstimo ----------
+
+export function obterAssinatura(id) {
+  return driver.obterDoc(['assinaturas', id]);
+}
+
+// Guarda a assinatura de um empréstimo já cadastrado.
+export function anexarAssinatura(emprestimo, imagemBase64) {
+  const assinaturaId = novoId();
+  gravar([
+    {
+      tipo: 'set',
+      caminho: ['assinaturas', assinaturaId],
+      dados: {
+        emprestimoId: emprestimo.id,
+        clienteId: emprestimo.clienteId,
+        clienteNome: emprestimo.clienteNome,
+        imagemBase64,
+        criadoEm: driver.carimbo(),
+      },
+    },
+    { tipo: 'atualizar', caminho: ['emprestimos', emprestimo.id], dados: { assinaturaId } },
+  ]);
+  return assinaturaId;
 }
 
 export function cancelarEmprestimo(emprestimo) {
@@ -288,6 +336,9 @@ export async function excluirEmprestimo(emprestimo) {
   }
   for (const pg of pagamentos) {
     operacoes.push({ tipo: 'excluir', caminho: ['pagamentos', pg.id] });
+  }
+  if (emprestimo.assinaturaId) {
+    operacoes.push({ tipo: 'excluir', caminho: ['assinaturas', emprestimo.assinaturaId] });
   }
   operacoes.push({ tipo: 'excluir', caminho: ['emprestimos', emprestimo.id] });
   gravar(operacoes);
@@ -443,15 +494,18 @@ export function excluirComprovante(emprestimoId, parcela, comprovanteId) {
 // ---------- Backup ----------
 
 export async function listarTudoParaBackup(incluirComprovantes) {
-  const [clientes, emprestimos, pagamentos] = await Promise.all([
+  // As assinaturas entram sempre: são desenhos de linhas, bem leves,
+  // e é o registro de quem pegou o dinheiro.
+  const [clientes, emprestimos, pagamentos, assinaturas] = await Promise.all([
     driver.listarColecao('clientes'),
     driver.listarColecao('emprestimos'),
     driver.listarColecao('pagamentos'),
+    driver.listarColecao('assinaturas'),
   ]);
   for (const emprestimo of emprestimos) {
     emprestimo.parcelas = await driver.listarParcelas(emprestimo.id);
   }
-  const resultado = { clientes, emprestimos, pagamentos };
+  const resultado = { clientes, emprestimos, pagamentos, assinaturas };
   if (incluirComprovantes) {
     resultado.comprovantes = await driver.listarColecao('comprovantes');
   }

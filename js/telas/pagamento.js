@@ -12,7 +12,7 @@ import {
   ativarCampoMoeda, lerCentavos,
 } from '../util.js';
 import { comprimirParaBase64, mostrarComprovante } from '../comprovante.js';
-import { desenharRecibo, compartilharRecibo } from '../recibo.js';
+import { desenharRecibo, compartilharImagem } from '../recibo.js';
 
 // ---------- Miniaturas de comprovantes já guardados ----------
 
@@ -242,7 +242,7 @@ export function mostrarRecibo({ emprestimo, valorCentavos, dataISO, numerosDasPa
   el.querySelector('[data-acao="fechar"]').addEventListener('click', fechar);
   el.querySelector('[data-acao="enviar"]').addEventListener('click', async () => {
     const nomeArquivo = `recibo-parcela-${numerosDasParcelas[0] ?? 1}.jpg`;
-    const resultado = await compartilharRecibo(canvas, nomeArquivo);
+    const resultado = await compartilharImagem(canvas, nomeArquivo);
     if (resultado === 'baixado') toast('Imagem do recibo baixada.');
     if (resultado === 'compartilhado') toast('Recibo enviado ✓');
   });

@@ -9,6 +9,16 @@ export function lerFonte() {
   try { return localStorage.getItem('caderneta-fonte') || 'normal'; } catch { return 'normal'; }
 }
 
+// Nome de quem empresta — aparece no comprovante do empréstimo
+// ("Recebi de Fulano..."). Fica guardado só neste aparelho.
+export function lerNomeCredor() {
+  try { return localStorage.getItem('caderneta-nome-credor') || ''; } catch { return ''; }
+}
+
+export function definirNomeCredor(nome) {
+  try { localStorage.setItem('caderneta-nome-credor', String(nome || '').trim()); } catch {}
+}
+
 export function lerTema() {
   try { return localStorage.getItem('caderneta-tema') || 'claro'; } catch { return 'claro'; }
 }

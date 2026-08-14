@@ -16,6 +16,7 @@ const dados = {
   parcelas: new Map(), // emprestimoId -> Map(numero -> parcela)
   pagamentos: new Map(),
   comprovantes: new Map(),
+  assinaturas: new Map(),
 };
 
 const ouvintes = new Set();

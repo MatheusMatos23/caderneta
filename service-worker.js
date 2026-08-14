@@ -14,7 +14,7 @@
 // abaixo (v1 → v2) para forçar a atualização da cópia guardada.
 // ============================================================
 
-const VERSAO_CACHE = 'caderneta-v1';
+const VERSAO_CACHE = 'caderneta-v2';
 
 const ARQUIVOS_DO_APP = [
   './',
@@ -30,6 +30,7 @@ const ARQUIVOS_DO_APP = [
   './js/dados-firebase.js',
   './js/dados-demo.js',
   './js/comprovante.js',
+  './js/assinatura.js',
   './js/recibo.js',
   './js/backup.js',
   './js/telas/login.js',
@@ -40,6 +41,7 @@ const ARQUIVOS_DO_APP = [
   './js/telas/emprestimo-novo.js',
   './js/telas/emprestimo.js',
   './js/telas/pagamento.js',
+  './js/telas/comprovante-emprestimo.js',
   './js/telas/ajustes.js',
   './icones/icone.svg',
   './icones/icone-192.png',

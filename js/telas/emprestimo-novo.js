@@ -14,6 +14,8 @@ import {
   somarDias, somarMeses, ehISOValido,
   ativarCampoMoeda, lerCentavos, toast, abrirModal,
 } from '../util.js';
+import { coletarAssinatura } from '../assinatura.js';
+import { mostrarComprovanteEmprestimo } from './comprovante-emprestimo.js';
 
 export function render(el, params = {}) {
   // Espera a lista de clientes chegar antes de montar o formulário.
@@ -267,14 +269,24 @@ export function render(el, params = {}) {
         </table>
       </div></div>
       <div class="espaco-cima">
-        <button class="botao botao-primario" data-acao="salvar">Está certo, salvar</button>
+        <button class="botao botao-primario" data-acao="salvar">Está certo, pedir assinatura</button>
         <button class="botao botao-neutro" data-acao="ajustar">Voltar e ajustar</button>
       </div>
     `);
 
     modal.querySelector('[data-acao="ajustar"]').addEventListener('click', fechar);
-    modal.querySelector('[data-acao="salvar"]').addEventListener('click', () => {
-      const id = dados.criarEmprestimo({
+    modal.querySelector('[data-acao="salvar"]').addEventListener('click', async () => {
+      fechar();
+
+      // Passo da assinatura: o celular vai para a mão de quem
+      // está pegando o dinheiro, como no caderno de papel.
+      const assinatura = await coletarAssinatura({ nome: cliente.nome });
+      if (assinatura.acao === 'cancelou') {
+        toast('O empréstimo ainda não foi salvo.');
+        return;
+      }
+
+      const emprestimoNovo = {
         clienteId: cliente.id,
         clienteNome: cliente.nome,
         valorEmprestadoCentavos: entrada.valorEmprestadoCentavos,
@@ -287,10 +299,33 @@ export function render(el, params = {}) {
         valores: resumo.valores,
         totalCentavos: resumo.totalCentavos,
         valorParcelaBaseCentavos: resumo.valorParcelaBaseCentavos,
-      });
-      fechar();
+        assinaturaBase64: assinatura.imagemBase64 || null,
+      };
+
+      const id = dados.criarEmprestimo(emprestimoNovo);
       toast('Empréstimo salvo ✓');
-      location.hash = '#/emprestimo/' + id;
+
+      if (assinatura.acao === 'assinou') {
+        // Mostra o comprovante na hora, para mandar no WhatsApp.
+        await mostrarComprovanteEmprestimo({
+          emprestimo: {
+            id,
+            clienteId: cliente.id,
+            clienteNome: cliente.nome,
+            valorEmprestado: entrada.valorEmprestadoCentavos,
+            dataEmprestimo: campoData.value,
+            numParcelas: parcelas.length,
+            valorParcela: resumo.valorParcelaBaseCentavos,
+            periodicidade: entrada.periodicidade,
+            primeiroVencimento: campoPrimeiro.value,
+            totalAReceber: resumo.totalCentavos,
+          },
+          assinaturaBase64: assinatura.imagemBase64,
+          aoFechar: () => { location.hash = '#/emprestimo/' + id; },
+        });
+      } else {
+        location.hash = '#/emprestimo/' + id;
+      }
     });
   }
 }

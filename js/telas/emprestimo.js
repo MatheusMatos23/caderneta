@@ -12,6 +12,8 @@ import {
   ativarCampoMoeda, lerCentavos, ehISOValido,
 } from '../util.js';
 import { abrirRegistroPagamento, abrirDetalheParcelaPaga } from './pagamento.js';
+import { coletarAssinatura } from '../assinatura.js';
+import { mostrarComprovanteEmprestimo } from './comprovante-emprestimo.js';
 
 const NOMES_MODO = {
   parcelas_combinadas: 'Parcelas combinadas',
@@ -88,6 +90,17 @@ export function render(el, { id }) {
           <span class="valor" style="font-weight:500">${esc(emprestimo.observacoes).replaceAll('\n', '<br>')}</span></div>` : ''}
       </div></div>
 
+      <h2 class="titulo-secao">Comprovante e assinatura</h2>
+      <div class="cartao"><div class="cartao-conteudo">
+        <div id="area-assinatura">
+          ${emprestimo.assinaturaId
+            ? '<p class="subtexto">Carregando a assinatura…</p>'
+            : '<p class="subtexto">Este empréstimo ainda não tem a assinatura de quem recebeu.</p>'}
+        </div>
+        <button class="botao botao-secundario" id="botao-comprovante">Ver / enviar comprovante</button>
+        ${emprestimo.assinaturaId ? '' : '<button class="botao botao-neutro" id="botao-assinar">✍️ Colher assinatura agora</button>'}
+      </div></div>
+
       <div class="espaco-cima-2">
         ${ativo ? '<button class="botao botao-linha" id="botao-cancelar" style="width:100%">Marcar como cancelado</button>' : ''}
         <button class="botao botao-perigo-claro" id="botao-excluir">Excluir empréstimo</button>
@@ -125,6 +138,41 @@ export function render(el, { id }) {
         if (!quer) return;
         dados.cancelarEmprestimo(emprestimo);
         toast('Empréstimo marcado como cancelado.');
+      });
+    }
+
+    // ---------- Comprovante e assinatura ----------
+
+    const areaAssinatura = el.querySelector('#area-assinatura');
+    if (emprestimo.assinaturaId) {
+      dados.obterAssinatura(emprestimo.assinaturaId).then((assinatura) => {
+        if (!areaAssinatura.isConnected) return;
+        if (!assinatura) {
+          areaAssinatura.innerHTML = '<p class="subtexto">A assinatura não foi encontrada.</p>';
+          return;
+        }
+        areaAssinatura.innerHTML = `
+          <p class="subtexto">Assinatura de quem recebeu:</p>
+          <img class="assinatura-guardada" alt="Assinatura de ${esc(emprestimo.clienteNome)}" src="${esc(assinatura.imagemBase64)}">`;
+      }).catch((erro) => {
+        console.error('Não deu para carregar a assinatura:', erro);
+      });
+    }
+
+    el.querySelector('#botao-comprovante').addEventListener('click', () => {
+      mostrarComprovanteEmprestimo({ emprestimo });
+    });
+
+    const botaoAssinar = el.querySelector('#botao-assinar');
+    if (botaoAssinar) {
+      botaoAssinar.addEventListener('click', async () => {
+        const assinatura = await coletarAssinatura({
+          nome: emprestimo.clienteNome,
+          textoPular: 'Agora não',
+        });
+        if (assinatura.acao !== 'assinou') return;
+        dados.anexarAssinatura(emprestimo, assinatura.imagemBase64);
+        toast('Assinatura guardada ✓');
       });
     }
 

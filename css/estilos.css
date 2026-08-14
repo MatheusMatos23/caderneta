@@ -691,6 +691,57 @@ a { color: var(--primaria); }
   margin-top: 0.5rem;
 }
 
+/* ---------- Quadro de assinatura ---------- */
+
+.quadro-assinatura {
+  position: relative;
+  background: #FFFFFF;
+  border: 2px dashed var(--borda);
+  border-radius: var(--raio);
+  overflow: hidden;
+}
+
+.quadro-assinatura canvas {
+  display: block;
+  width: 100%;
+  height: 12rem;
+  background: #FFFFFF;
+  touch-action: none; /* o dedo desenha, não rola a tela */
+  cursor: crosshair;
+}
+
+.quadro-assinatura .linha-guia {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: 2.6rem;
+  border-bottom: 2px solid #D8D7CF;
+  pointer-events: none;
+}
+
+.quadro-assinatura .dica-assinatura {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0.9rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: #9A9D95;
+  pointer-events: none;
+}
+
+/* Assinatura já guardada, mostrada na ficha do empréstimo */
+.assinatura-guardada {
+  display: block;
+  width: 100%;
+  max-width: 18rem;
+  background: #FFFFFF;
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  padding: 0.3rem;
+  margin: 0.2rem 0 0.8rem;
+}
+
 /* ---------- Toasts (avisos rápidos) ---------- */
 
 #raiz-toast {
