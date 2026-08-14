@@ -14,7 +14,7 @@
 // abaixo (v1 → v2) para forçar a atualização da cópia guardada.
 // ============================================================
 
-const VERSAO_CACHE = 'caderneta-v2';
+const VERSAO_CACHE = 'caderneta-v3';
 
 const ARQUIVOS_DO_APP = [
   './',

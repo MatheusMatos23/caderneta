@@ -67,6 +67,20 @@ body {
   line-height: 1.45;
   -webkit-tap-highlight-color: transparent;
   -webkit-font-smoothing: antialiased;
+  /* Nada deve fazer a tela rolar para o lado.
+     "clip" corta sem atrapalhar o cabeçalho que fica grudado no topo. */
+  overflow-x: clip;
+}
+
+/* Dinheiro nunca parte no meio ("R$ 18.500,0" numa linha e "0" na outra). */
+.dinheiro,
+.cartao-painel .numero,
+.item-lista .direita,
+.bloco-destaque .numero {
+  white-space: nowrap;
+  overflow-wrap: normal;
+  word-break: keep-all;
+  font-variant-numeric: tabular-nums;
 }
 
 h1, h2, h3, p { margin: 0; }
@@ -202,7 +216,11 @@ a { color: var(--primaria); }
   align-items: center;
   gap: 0.5rem;
   margin-bottom: 0.9rem;
+  min-width: 0;
 }
+
+.cabecalho-tela > div { min-width: 0; }
+.cabecalho-tela .titulo-tela { overflow-wrap: anywhere; }
 
 .botao-voltar {
   background: var(--cinza-fundo);
@@ -330,18 +348,67 @@ a { color: var(--primaria); }
 .campo input,
 .campo select,
 .campo textarea {
+  display: block;
   width: 100%;
+  max-width: 100%;
+  min-width: 0; /* impede que o campo estique a tela no iPhone */
   min-height: 2.9rem;
   padding: 0.6rem 0.75rem;
   font-family: inherit;
   font-size: 1.05rem;
+  line-height: 1.4;
   color: var(--texto);
   background: var(--cartao);
   border: 2px solid var(--borda);
   border-radius: 12px;
+  -webkit-appearance: none; /* iPhone: tira o visual próprio do sistema */
+  appearance: none;
 }
 
 .campo textarea { min-height: 4.5rem; resize: vertical; }
+
+/* ---------- Campos de data ----------
+   Sem estes ajustes, o iPhone deixa a data centralizada, com altura
+   própria e mais larga que os outros campos. */
+
+.campo input[type="date"] {
+  text-align: left;
+  /* O Safari não aceita o padding normal no miolo da data. */
+  padding-top: 0.55rem;
+  padding-bottom: 0.55rem;
+}
+
+.campo input[type="date"]::-webkit-date-and-time-value {
+  text-align: left;
+  margin: 0;
+  min-height: 1.5em;
+  line-height: 1.5em;
+}
+
+.campo input[type="date"]::-webkit-datetime-edit {
+  display: block;
+  padding: 0;
+}
+
+.campo input[type="date"]::-webkit-calendar-picker-indicator {
+  margin-left: auto;
+  opacity: 0.65;
+}
+
+/* ---------- Seletores (listas de escolha) ----------
+   Com a aparência do sistema desligada, desenhamos a setinha. */
+
+.campo select {
+  padding-right: 2.7rem;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2321251F' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 0.8rem center;
+  background-size: 1.15rem 1.15rem;
+}
+
+html[data-tema="escuro"] .campo select {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23EAECE4' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9l6 6 6-6'/></svg>");
+}
 
 .campo input:focus,
 .campo select:focus,
@@ -405,7 +472,15 @@ a { color: var(--primaria); }
   margin-top: 0.15rem;
 }
 
-.cartao-opcao input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.cartao-opcao input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  min-height: 0;
+  padding: 0;
+  border: none;
+}
 
 .cartao-opcao:has(input:checked) {
   border-color: var(--primaria);
@@ -465,7 +540,7 @@ a { color: var(--primaria); }
 
 .item-lista .meio { flex: 1; min-width: 0; }
 
-.item-lista .titulo { font-weight: 700; }
+.item-lista .titulo { font-weight: 700; overflow-wrap: anywhere; }
 
 .item-lista .linha2 {
   font-size: 0.85rem;
@@ -480,6 +555,9 @@ a { color: var(--primaria); }
 }
 
 .item-lista .direita .linha2 { font-weight: 500; }
+
+/* Botão "Cobrar" embaixo do valor, com um respiro */
+.item-lista .direita .botao-pequeno { margin-top: 0.4rem; }
 
 .seta { color: var(--texto-suave); flex: none; font-size: 1.2rem; }
 
@@ -502,7 +580,9 @@ a { color: var(--primaria); }
 .grade-painel {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.65rem;
+  /* Espaçamento em pixels (não em "rem"): assim o espaço para o
+     número não encolhe quando a letra está no modo "Grande". */
+  gap: 12px;
 }
 
 .cartao-painel {
@@ -510,21 +590,25 @@ a { color: var(--primaria); }
   border: 1px solid var(--borda);
   border-radius: var(--raio);
   box-shadow: var(--sombra);
-  padding: 0.8rem 0.85rem;
+  padding: 14px 12px;
+  min-width: 0; /* deixa o cartão encolher em vez de esticar a tela */
 }
 
 .cartao-painel .rotulo {
   font-size: 0.83rem;
   font-weight: 700;
   color: var(--texto-suave);
+  line-height: 1.25;
 }
 
+/* O número acompanha a largura do celular (não o tamanho da letra
+   escolhido nos Ajustes), senão valores altos como R$ 118.500,00
+   não caberiam no cartão quando a letra está no modo "Grande". */
 .cartao-painel .numero {
-  font-size: 1.35rem;
+  font-size: min(1.35rem, 4.7vw);
   font-weight: 800;
-  margin-top: 0.2rem;
+  margin-top: 0.25rem;
   line-height: 1.2;
-  overflow-wrap: anywhere;
 }
 
 .cartao-painel .detalhe {
